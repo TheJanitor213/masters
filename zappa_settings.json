@@ -1,0 +1,21 @@
+{
+    "dev": {
+        "app_function": "app.app",
+        "profile_name": "default",
+        "project_name": "masters",
+        "runtime": "python3.6",
+        "s3_bucket": "zappa-ax0b7nbq7",
+        "aws_region": "eu-central-1",
+        "events": [
+            {
+                "function": "app.processing.process_file",
+                "event_source": {
+                              "arn":  "arn:aws:s3:::datasets-masters-2020",
+                              "events": ["s3:ObjectCreated:*"]
+                 }
+          }
+        ],
+        "layers":["arn:aws:lambda:eu-central-1:701941495701:layer:ffmpeg:3"]
+
+    }
+}
