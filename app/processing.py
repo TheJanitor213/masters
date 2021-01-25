@@ -24,13 +24,11 @@ def before():
     logger.info(request.url)
     logger.debug(request.__dict__)
     logger.debug(request.headers)
-    logger.debug(request.get_data())
 
 
 @processing.after_request
 def after(response):
     logger.debug(response.status)
-    logger.debug(response.get_data())
     return response
 
 
@@ -68,8 +66,14 @@ def process_file(event, context):
             s3_client.download_file(bucket, key, file_loc)
             song = AudioSegment.from_wav(file_loc)
             
+            dBFS = song.dBFS
+            chunks = split_on_silence (song, min_silence_len=1000,
 
-            chunks = split_on_silence (song, min_silence_len = 300, silence_thresh = -30)
+                                        # anything under -16 dBFS is considered silence
+                                        silence_thresh=dBFS-16, 
+
+                                        # keep 200 ms of leading/trailing silence
+                                        keep_silence=200)
             logger.debug(chunks)
             for i, chunk in enumerate(chunks):
                 silence_chunk = AudioSegment.silent(duration=200)
@@ -78,7 +82,7 @@ def process_file(event, context):
                 logger.debug("Exporting chunk{0}.mp3.".format(i))
                 normalized_chunk.export("/tmp/chunk{0}.mp3".format(i),bitrate = "320k",format = "mp3")
                 s3_client.upload_file("/tmp/chunk{0}.mp3".format(i), 'datasets-masters-2020',"splits/{0}/chunk_{1}.mp3".format(key.split('.')[0], i))
-            return "Complete"
+            return
         else:
             logger.debug('Nothing to do here')
             return

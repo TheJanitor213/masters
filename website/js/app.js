@@ -115,21 +115,43 @@ function stopRecording() {
 	rec.exportWAV(createDownloadLink);
 
 }
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
 
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
 function createDownloadLink(blob) {
 	console.log(blob)
 	var data = new FormData();
 	for (var channel = 0; channel < blob.length; channel++) {
-		window.alert("sometext");
+		
 		console.log('123')
 		var url = URL.createObjectURL(blob[channel]);
 		
 		var au = document.createElement('audio');
 		var li = document.createElement('li');
 		var link = document.createElement('a');
+		var d = new Date(),
+			month = '' + (d.getMonth() + 1),
+			day = '' + d.getDate(),
+			year = d.getFullYear();
 
+		if (month.length < 2) 
+			month = '0' + month;
+		if (day.length < 2) 
+			day = '0' + day;
+
+		today = [year, month, day].join('-');
 		//name of .wav file to use during upload and download (without extension)
-		var filename = new Date().toISOString();
+		var filename = today + '-' + $('#letters').val() + '-' + $('#phone').val()
 
 		//add controls to the <audio> element
 		au.controls = true;
@@ -137,7 +159,7 @@ function createDownloadLink(blob) {
 
 		//save to disk link
 		link.href = url;
-		link.download = filename+".wav"; //download forces the browser to download the file using the  filename
+		link.download = filename + ".wav"; //download forces the browser to download the file using the  filename
 		link.innerHTML = "Save to disk";
 
 		//add the new audio element to li
@@ -176,7 +198,10 @@ function createDownloadLink(blob) {
 				enctype: "multipart/form-data",
 				type: 'POST',
 				success: function ( data ) {
-					
+					li.appendChild(document.createTextNode("Successfully uploaded"))
+				},
+				error:function ( data ) {
+					li.appendChild(document.createTextNode("Failed to upload"))
 				}
 			});
 		})
